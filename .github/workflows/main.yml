@@ -1,0 +1,53 @@
+name: Python application
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Build docker image
+      run: |
+        docker build -t hallo-welt .
+
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Run smoke test
+      run: |
+        echo "Running smoke test..."
+        docker run hallo-welt | grep -q "Hallo Welt"
+
+    - name: Run unit test
+      run: |
+        echo "Running unit test..."
+        # Hier würden Sie normalerweise Ihren Unit-Test-Runner ausführen
+        true # Simuliert einen erfolgreichen Test
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+    - name: Deploy to staging
+      run: |
+        echo "Deploying to staging..."
+        # Fügen Sie hier Ihre Staging-Deployment-Logik ein
+
+    - name: QA Check
+      run: |
+        echo "Running QA checks..."
+        # Hier könnten automatisierte QA-Skripte laufen
+
+    - name: Deploy to production
+      run: |
+        echo "Deploying to production..."
+        # Fügen Sie hier Ihre Produktions-Deployment-Logik ein
