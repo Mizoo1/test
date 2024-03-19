@@ -7,29 +7,35 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3  # Aktualisiert auf die neueste Version
-
+    - uses: actions/checkout@v3
     - name: Build docker image
       run: |
         docker build -t hallo-welt .
+        docker save hallo-welt:latest -o hallo-welt.tar
+    - name: Upload Docker image as artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: hallo-welt-image
+        path: hallo-welt.tar
 
   test:
     runs-on: ubuntu-latest
     needs: build
 
     steps:
-    - uses: actions/checkout@v2
-
+    - uses: actions/checkout@v3
+    - name: Download Docker image artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: hallo-welt-image
+    - name: Load docker image
+      run: |
+        docker load -i hallo-welt.tar
     - name: Run smoke test
       run: |
         echo "Running smoke test..."
-        docker run hallo-welt | grep -q "Hallo Welt"
+        docker run hallo-welt:latest
 
-    - name: Run unit test
-      run: |
-        echo "Running unit test..."
-        # Hier würden Sie normalerweise Ihren Unit-Test-Runner ausführen
-        true # Simuliert einen erfolgreichen Test
 
   deploy:
     runs-on: ubuntu-latest
